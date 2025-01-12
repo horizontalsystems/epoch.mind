@@ -1,11 +1,11 @@
-import { Character, Clients, defaultCharacter } from "@elizaos/core";
+import { Character, Clients, defaultCharacter, ModelProviderName } from '@elizaos/core';
 
 export const character: Character = {
     ...defaultCharacter,
-    // name: "Eliza",
-    // plugins: [],
-    // clients: [],
-    // modelProvider: ModelProviderName.OPENAI,
+    name: "Eliza",
+    plugins: [],
+    clients: [Clients.TELEGRAM],
+    modelProvider: ModelProviderName.OPENAI,
     // settings: {
     //     secrets: {},
     //     voice: {
