@@ -1,11 +1,12 @@
 {
-  "name": "@ai16z/agent",
+  "name": "@elizaos/eliza-starter",
   "version": "0.1.1",
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts",
     "start": "tsc && node --loader ts-node/esm src/index.ts \"--character=characters/epoch.mind.character.json\"",
+    "clean": "./scripts/clean.sh",
     "start:service:all": "pm2 start pnpm --name=\"all\" --restart-delay=3000 --max-restarts=10 -- run start:all",
     "stop:service:all": "pm2 stop all"
   },
