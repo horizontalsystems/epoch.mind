@@ -6,7 +6,6 @@ import {
   stringToUuid,
   type Character,
 } from "@elizaos/core";
-import { bootstrapPlugin } from "@elizaos/plugin-bootstrap";
 import { createNodePlugin } from "@elizaos/plugin-node";
 import { solanaPlugin } from "@elizaos/plugin-solana";
 import fs from "fs";
@@ -23,6 +22,10 @@ import {
   parseArguments,
 } from "./config/index.ts";
 import { initializeDatabase } from "./database/index.ts";
+import { therapyStateEvaluator } from "./therapyStateEvaluator.ts";
+import { therapyStateProvider } from "./therapyStateProvider.ts";
+import { actions } from "@elizaos/plugin-bootstrap";
+import PostgresDatabaseAdapter from "@elizaos/adapter-postgres";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,15 +56,14 @@ export function createAgent(
     databaseAdapter: db,
     token,
     modelProvider: character.modelProvider,
-    evaluators: [],
+    evaluators: [therapyStateEvaluator],
     character,
     plugins: [
-      bootstrapPlugin,
       nodePlugin,
       character.settings?.secrets?.WALLET_PUBLIC_KEY ? solanaPlugin : null,
     ].filter(Boolean),
-    providers: [],
-    actions: [],
+    providers: [therapyStateProvider],
+    actions: [actions.noneAction],
     services: [],
     managers: [],
     cacheManager: cache,
@@ -82,7 +84,12 @@ async function startAgent(character: Character, directClient: DirectClient) {
 
     const db = initializeDatabase(dataDir);
 
+    if (!(db instanceof PostgresDatabaseAdapter)) {
+      throw new Error("Database adapter must be an instance of PostgresDatabaseAdapter");
+    }
+
     await db.init();
+    await db.query("CREATE TABLE IF NOT EXISTS therapy_states (room_id UUID, user_id UUID, status TEXT, present_symptoms TEXT[], relevant_history TEXT[], PRIMARY KEY (room_id, user_id))");
 
     const cache = initializeDbCache(character, db);
     const runtime = createAgent(character, db, cache, token);
