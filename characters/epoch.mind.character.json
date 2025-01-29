@@ -1,8 +1,8 @@
 {
     "name": "epoch.mind",
     "plugins": [],
-    "clients": [],
-    "modelProvider": "llama_local",
+    "clients": ["telegram", "twitter"],
+    "modelProvider": "openai",
     "settings": {
       "secrets": {},
       "voice": {
