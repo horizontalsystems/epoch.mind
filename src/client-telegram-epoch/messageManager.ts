@@ -27,6 +27,9 @@ import {
 } from "./constants.ts";
 
 import fs from "fs";
+import ExtendedCharacter from "../ExtendedCharacter.ts";
+import axios from "axios";
+import { formatTherapyStateAsString, getTherapyState, resetTherapyState } from "../therapyState.ts";
 
 const MAX_MESSAGE_LENGTH = 4096; // Telegram's max message length
 
@@ -826,6 +829,51 @@ export class MessageManager {
                 : "caption" in message
                   ? (message as any).caption
                   : "";
+
+        if (messageText === "/start") {
+            const extendedCharacter = this.runtime.character as ExtendedCharacter;
+
+            await ctx.telegram.sendMessage(ctx.chat.id, extendedCharacter.settings.introMessage);
+            return;
+        }
+
+        if (messageText === "/reload") {
+            const fileId = "document" in message ? message.document.file_id : null;
+
+            if (!fileId) {
+                return;
+            }
+            const fileLink = await ctx.telegram.getFileLink(fileId);
+            const response = await axios.get(fileLink.toString(), { responseType: 'text' });
+            const character = JSON.parse(response.data) as ExtendedCharacter;
+            this.runtime.character = character;
+
+            return;
+        }
+
+        if (messageText === "/reset") {
+            const userId = stringToUuid(ctx.from.id.toString()) as UUID;
+            const roomId = stringToUuid(
+                ctx.chat?.id.toString() + "-" + this.runtime.agentId
+            ) as UUID;
+            console.log("Resetting therapy state", userId, roomId);
+
+            await resetTherapyState({ runtime: this.runtime, roomId, userId });
+            await ctx.telegram.sendMessage(ctx.chat.id, "Your therapy session has been reset. You can now start a new one.");
+
+            return;
+        }
+
+        if (messageText === "/state") {
+            const userId = stringToUuid(ctx.from.id.toString()) as UUID;
+            const roomId = stringToUuid(
+                ctx.chat?.id.toString() + "-" + this.runtime.agentId
+            ) as UUID;
+
+            const therapyState = await getTherapyState({ runtime: this.runtime, roomId, userId });
+            await ctx.telegram.sendMessage(ctx.chat.id, formatTherapyStateAsString(therapyState));
+            return;
+        }
 
         // Add team handling at the start
         if (

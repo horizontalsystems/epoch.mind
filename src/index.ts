@@ -89,7 +89,7 @@ async function startAgent(character: Character, directClient: DirectClient) {
     }
 
     await db.init();
-    await db.query("CREATE TABLE IF NOT EXISTS therapy_states (room_id UUID, user_id UUID, status TEXT, present_symptoms TEXT[], relevant_history TEXT[], PRIMARY KEY (room_id, user_id))");
+    await db.query("CREATE TABLE IF NOT EXISTS therapy_states (room_id UUID, user_id UUID, status TEXT, present_symptoms TEXT[], relevant_history TEXT[], automatic_thoughts TEXT[], cognitive_distortions TEXT[], emotional_transitions TEXT[], PRIMARY KEY (room_id, user_id))");
 
     const cache = initializeDbCache(character, db);
     const runtime = createAgent(character, db, cache, token);
