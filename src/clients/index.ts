@@ -1,6 +1,6 @@
 import { AutoClientInterface } from "@elizaos/client-auto";
 import { DiscordClientInterface } from "@elizaos/client-discord";
-import { TelegramClientInterface } from "@elizaos/client-telegram";
+import { TelegramClientInterface } from "../client-telegram-epoch/index.ts";
 import { TwitterClientInterface } from "@elizaos/client-twitter";
 import { Character, IAgentRuntime } from "@elizaos/core";
 
