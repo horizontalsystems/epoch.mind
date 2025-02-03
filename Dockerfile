@@ -24,7 +24,7 @@ COPY ./src ./src
 COPY ./characters ./characters
 
 # Install dependencies and build the project
-RUN pnpm install --frozen-lockfile
+RUN pnpm install 
 RUN pnpm build 
 
 # Create dist directory and set permissions
