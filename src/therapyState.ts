@@ -170,5 +170,5 @@ export const resetTherapyState = async ({
     const db = runtime.databaseAdapter as PostgresDatabaseAdapter;
 
     await db.query('DELETE FROM therapy_states WHERE "room_id" = $1 AND "user_id" = $2', [roomId, userId]);
-    await db.query('DELETE FROM memories WHERE "roomId" = $1 AND "userId" = $2', [roomId, userId]);
+    await db.query('DELETE FROM memories WHERE "roomId" = $1', [roomId]);
 };
