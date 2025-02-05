@@ -8,6 +8,7 @@ type ExtendedCharacter = Character & {
       collectingTherapyDataTemplate?: string;
       therapyDataCollectedTemplate?: string;
       therapyStateEvaluatorTemplate?: string;
+      treatmentStartedTemplate?: string;
     };
 };
 

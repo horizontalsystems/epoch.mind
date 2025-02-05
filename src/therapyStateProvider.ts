@@ -5,13 +5,16 @@ import {
     State,
     elizaLogger,
 } from "@elizaos/core";
-import { formatTherapyStateAsString, getTherapyState, TherapyStateStatus } from "./therapyState.js";
+import { formatTherapyStateAsString, getTherapyState, TherapyStateStatus, updateTherapyState } from "./therapyState.js";
 import ExtendedCharacter from "./ExtendedCharacter";
 
 const collectingTherapyDataTemplate = `# INSTRUCTION:
 Ask the user for more information about his/her mental health issue. Try to get more concrete information on the symptoms and the relevant history.`;
 
 const therapyDataCollectedTemplate = `# INSTRUCTION:
+The user has provided all the necessary information. Acknowledge the user on the data collected and tell about the treatment progress. Use longer messages to explain strategies and invite collaborative discussion.`;
+
+const treatmentStartedTemplate = `# INSTRUCTION:
 The user has provided all the necessary information. Generate a treatment plan for the user according to the information provided in the recent conversation and the therapy state.`;
 
 
@@ -34,6 +37,13 @@ export const therapyStateProvider: Provider = {
 
             case TherapyStateStatus.DATA_COLLECTED:
                 result += "\n\n" + extendedCharacter.templates?.therapyDataCollectedTemplate || therapyDataCollectedTemplate;
+                therapyState.status = TherapyStateStatus.TREATMENT_STARTED;
+                await updateTherapyState({ runtime, therapyState });
+                break;
+
+            case TherapyStateStatus.TREATMENT_STARTED:
+                result += "\n\n" + extendedCharacter.templates?.treatmentStartedTemplate || treatmentStartedTemplate;
+                break;
         }
 
         return result;

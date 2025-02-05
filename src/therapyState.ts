@@ -7,6 +7,7 @@ import {
 export enum TherapyStateStatus {
     COLLECTING_DATA = "COLLECTING_DATA",
     DATA_COLLECTED = "DATA_COLLECTED",
+    TREATMENT_STARTED = "TREATMENT_STARTED",
 }
 
 export class TherapyState {

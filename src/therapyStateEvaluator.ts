@@ -119,7 +119,6 @@ export const therapyStateEvaluator: Evaluator = {
             userId: message.userId,
         });
 
-        console.log("therapyState", therapyState, 'valid? :', therapyState?.isInProgress)
         return therapyState?.isInProgress;
     },
     description: "Analyze the conversation and update the status of the therapy flow based on the new information provided.",
@@ -131,7 +130,7 @@ export const therapyStateEvaluator: Evaluator = {
   {{user2}}: A therapist.
 
   Therapy State:
-   - status: IN_PROGRESS
+   - status: COLLECTING_DATA
    - presentSymptoms: ["anxiety", "panic attacks", "social anxiety"]
    - relevantHistory: ["I've been feeling anxious for the past month", "I've been avoiding social situations"]
    - automaticThoughts: []
@@ -160,7 +159,7 @@ export const therapyStateEvaluator: Evaluator = {
             ],
 
             outcome: `{
-                "status": "IN_PROGRESS",
+                "status": "COLLECTING_DATA",
                 "presentSymptoms": ["anxiety", "panic attacks", "social anxiety"],
                 "relevantHistory": ["I've been feeling anxious for the past month", "I've been avoiding social situations"],
                 "automaticThoughts": [],
@@ -175,7 +174,7 @@ export const therapyStateEvaluator: Evaluator = {
   {{user2}}: A therapist.
 
   Therapy State:
-  - status: IN_PROGRESS
+  - status: COLLECTING_DATA
   - presentSymptoms: ["fear of failure"]
   - relevantHistory: ["I've been feeling anxious about my job for the past month"]
   - automaticThoughts: []
@@ -202,7 +201,7 @@ export const therapyStateEvaluator: Evaluator = {
             ],
 
             outcome: `{
-                "status": "COMPLETED",
+                "status": "DATA_COLLECTED",
                 "presentSymptoms": ["fear of failure"],
                 "relevantHistory": ["I've been feeling anxious about my job for the past month"],
                 "automaticThoughts": [],
