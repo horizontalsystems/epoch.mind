@@ -3,9 +3,8 @@ import {
     IAgentRuntime,
     Memory,
     State,
-    elizaLogger,
 } from "@elizaos/core";
-import { formatTherapyStateAsString, getTherapyState, TherapyStateStatus, updateTherapyState } from "./therapyState.js";
+import { formatTherapyStateAsString, getTherapyState, TherapyStateStatus } from "./therapyState.js";
 import ExtendedCharacter from "./ExtendedCharacter";
 
 const collectingTherapyDataTemplate = `# INSTRUCTION:
@@ -37,8 +36,6 @@ export const therapyStateProvider: Provider = {
 
             case TherapyStateStatus.DATA_COLLECTED:
                 result += "\n\n" + extendedCharacter.templates?.therapyDataCollectedTemplate || therapyDataCollectedTemplate;
-                therapyState.status = TherapyStateStatus.TREATMENT_STARTED;
-                await updateTherapyState({ runtime, therapyState });
                 break;
 
             case TherapyStateStatus.TREATMENT_STARTED:
