@@ -11,65 +11,41 @@ import {
 import { formatTherapyStateAsString, getTherapyState, TherapyState, TherapyStateStatus, updateTherapyState } from "./therapyState.ts";
 import ExtendedCharacter from "./ExtendedCharacter.ts";
 
-const therapyStateTemplate = `
-TASK: Update Therapy State
-Analyze the conversation and update the therapy state based on the new information provided.
-
-# INSTRUCTIONS
-
-- Review the conversation and identify any information that is a symptom of a mental health issue that currently exists OR a history related to the current mental health issue OR automatic thoughts OR cognitive distortions OR emotional transitions.
-- Identify the automatic thoughts, cognitive distortions, and emotional transitions of the user.
-- Format cognitive distortions as 'type:distortion1', 'type:distortion2', 'type:distortion3'
-- Format emotional transitions as 'trigger:trigger text', 'initialEmotion:initial emotion text', 'secondEmotion:second emotion text', 'thirdEmotion:third emotion text', 'fourthEmotion:fourth emotion text', 'behavior:behavior text'
-- Update the therapy state if there is new information.
-- Update the status of the therapy state to 'DATA_COLLECTED' if all information about the mental health issue is collected and the user is ready for the treatment.
-- If no progress is made, do not change the status of the therapy state.
-
-# Therapy State:
-{{therapyStateJsonString}}
-
-# RECENT MESSAGES
-{{recentMessages}}
-
-TASK: Analyze the conversation and update the therapy state based on the new information provided. Respond with a JSON object of the therapy state to update.
-- The therapy state must be a JSON object that has all the keys from the current state.
-
-Response format should be:
-\`\`\`json
-{
-    "status": "COLLECTING_DATA" | "DATA_COLLECTED", // required
-    "presentSymptoms": ["symptom1", "symptom2", "symptom3"],
-    "relevantHistory": ["history1", "history2", "history3"],
-    "automaticThoughts": ["thought1", "thought2", "thought3"],
-    "cognitiveDistortions": ["type:distortion1", "type:distortion2", "type:distortion3"],
-    "emotionalTransitions": [
-        "trigger:trigger text",
-        "initialEmotion:initial emotion text",
-        "secondEmotion:second emotion text",
-        "thirdEmotion:third emotion text",
-        "fourthEmotion:fourth emotion text",
-        "behavior:behavior text"
-    ]
-}
-\`\`\`
-`;
-
 async function handler(
     runtime: IAgentRuntime,
     message: Memory,
     state: State | undefined,
 ): Promise<TherapyState[]> {
-    // get therapy state
     const therapyState = await getTherapyState({ runtime, roomId: message.roomId, userId: message.userId });
+    const extendedCharacter = runtime.character as ExtendedCharacter;
+    const templates = extendedCharacter.templates;
+
+    let instructions = "";
+    switch (therapyState.status) {
+        case null:
+            instructions = templates?.evaluatorCOLLECTING_DATA;
+            break;
+        case TherapyStateStatus.COLLECTING_DATA:
+            instructions = templates?.evaluatorCOLLECTING_DATA;
+            break;
+        case TherapyStateStatus.DATA_COLLECTED:
+            instructions = templates?.evaluatorDATA_COLLECTED;
+            break;
+        case TherapyStateStatus.DATA_APPROVED:
+            instructions = templates?.evaluatorDATA_APPROVED;
+            break;
+    }
 
     state = (await runtime.composeState(message)) as State;
-    const evaluatorState = { ...state, therapyStateJsonString: formatTherapyStateAsString(therapyState) }
-
-    const extendedCharacter = runtime.character as ExtendedCharacter;
+    const evaluatorState = { 
+        ...state, 
+        therapyStateJsonString: formatTherapyStateAsString(therapyState),
+        instructions
+    }
 
     const context = composeContext({
         state: evaluatorState,
-        template: extendedCharacter.templates?.therapyStateEvaluatorTemplate || therapyStateTemplate,
+        template: templates?.evaluatorTEMPLATE,
     });
 
     console.log("therapyStateEvaluator prompt:", context);
@@ -87,11 +63,17 @@ async function handler(
     // Apply the updates to the therapy state
     const updatedTherapyState = {
         ...updates,
+        sessionStartedAt: therapyState.sessionStartedAt,
+        sessionEndedAt: therapyState.sessionEndedAt,
         roomId: therapyState.roomId,
         userId: therapyState.userId,
     } as TherapyState;
 
     console.log("updatedTherapyState: ", updatedTherapyState);
+
+    if (updatedTherapyState.status === TherapyStateStatus.PROPOSALS_APPROVED && !updatedTherapyState.sessionEndedAt) {
+        updatedTherapyState.sessionEndedAt = new Date();
+    }
 
     // Update state in the database
     await updateTherapyState({ runtime, therapyState: updatedTherapyState });
@@ -136,7 +118,8 @@ export const therapyStateEvaluator: Evaluator = {
    - automaticThoughts: []
    - cognitiveDistortions: []
    - emotionalTransitions: []
-   `,
+   - proposedTreatment: []
+`,
             messages: [
                 {
                     user: "{{user1}}",
@@ -164,7 +147,8 @@ export const therapyStateEvaluator: Evaluator = {
                 "relevantHistory": ["I've been feeling anxious for the past month", "I've been avoiding social situations"],
                 "automaticThoughts": [],
                 "cognitiveDistortions": [],
-                "emotionalTransitions": []
+                "emotionalTransitions": [],
+                "proposedTreatment": []
             }`,
         },
 
@@ -180,6 +164,7 @@ export const therapyStateEvaluator: Evaluator = {
   - automaticThoughts: []
   - cognitiveDistortions: []
   - emotionalTransitions: []
+  - proposedTreatment: []
 `,
             messages: [
                 {
@@ -206,7 +191,8 @@ export const therapyStateEvaluator: Evaluator = {
                 "relevantHistory": ["I've been feeling anxious about my job for the past month"],
                 "automaticThoughts": [],
                 "cognitiveDistortions": [],
-                "emotionalTransitions": []
+                "emotionalTransitions": [],
+                "proposedTreatment": []
             }`,
         },
     ],

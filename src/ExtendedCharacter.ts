@@ -5,11 +5,15 @@ type ExtendedCharacter = Character & {
         introMessage?: string;
     };
     templates?: {
-      collectingTherapyDataTemplate?: string;
-      therapyDataCollectedTemplate?: string;
-      therapyStateEvaluatorTemplate?: string;
-      treatmentStartedTemplate?: string;
-    };
+      providerCOLLECTING_DATA?: string;
+      providerDATA_COLLECTED?: string;
+      providerDATA_APPROVED?: string;
+      providerPROPOSALS_APPROVED?: string;
+      evaluatorTEMPLATE?: string;
+      evaluatorCOLLECTING_DATA?: string;
+      evaluatorDATA_COLLECTED?: string;
+      evaluatorDATA_APPROVED?: string;
+  }
 };
 
 export default ExtendedCharacter;
